@@ -2,12 +2,14 @@
 Simple code to extract comments from facebook
 ### How to run
 
-First, you need to install playwright
+First, you need to install:
 
 ```
 pip install playwright
 
 playwright install
+
+pip install beautifulsoup4
 ```
 
 Then you need to config acc_pass.py.
