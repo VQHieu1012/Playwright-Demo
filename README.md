@@ -9,6 +9,8 @@ pip install playwright
 
 playwright install
 
+pip install playwright-stealth
+
 pip install beautifulsoup4
 ```
 
