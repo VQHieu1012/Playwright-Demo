@@ -12,6 +12,8 @@ playwright install
 pip install playwright-stealth
 
 pip install beautifulsoup4
+
+pip install wordcloud
 ```
 
 Then you need to config acc_pass.py.
