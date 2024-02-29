@@ -3,6 +3,8 @@ from playwright_stealth import stealth_sync
 from bs4 import BeautifulSoup
 from time import sleep
 import pandas as pd
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 from acc_pass import ACCOUNT, PASS, USER_DATA_DIR
 
 
@@ -48,19 +50,18 @@ with sync_playwright() as p:
         #     page.get_by_role('button', name="Gần đây nhất").click()
         # except:
         #     page.get_by_role('button', name="Phù hợp nhất").click()
-        sleep(5)
+        sleep(3)
         # page.get_by_role('menuitem', name="Tất cả bình luận").click()
         page.get_by_role('menuitem').last.click()
-        sleep(5)
+        sleep(3)
         try:
             while True:
                 page.get_by_role('button', name="Xem thêm bình luận").click()
                 print("load")
-                sleep(3)
+                sleep(2)
         except: 
             pass
         print("Full load")
-        sleep(3)
         log_out = False
     except:
         page.locator("//div[@class='x1rg5ohu x1n2onr6 x3ajldb x1ja2u2z']").first.click()
@@ -68,7 +69,7 @@ with sync_playwright() as p:
         page.locator("//div[@role='listitem'][5]").click()
         log_out = True
     
-    sleep(3)
+    sleep(1)
     soup = BeautifulSoup(page.content(), 'lxml')
     
     
@@ -79,11 +80,12 @@ with sync_playwright() as p:
 
     
     #page.get_by_label("Đăng xuất").click()
-    sleep(5)
+    sleep(1)
     page.close()
     browser.close()
 
 output = []
+text = ''
 comments = soup.find_all("div", class_ = 'x1y1aw1k xn6708d xwib8y2 x1ye3gou')
 for comment in comments:
     user = comment.find('span', class_ ='x3nfvp2').get_text()
@@ -92,8 +94,17 @@ for comment in comments:
     except:
         cmt = "#sticker"
 
+    text = ' '.join([text, cmt])
     output.append([user, cmt])
     print(user, ' ', cmt)
 
 df = pd.DataFrame(output[1:])
 df.to_csv('output.csv', index=False)
+
+# visualize
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
