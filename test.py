@@ -6,7 +6,7 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from acc_pass import ACCOUNT, PASS, USER_DATA_DIR
-
+from underthesea import word_tokenize
 
 tiki = 'https://www.facebook.com/?stype=lo&deoia=1&jlou=AfczHBzuFgKc5jde3dWHkPnlaB20s2OgvO2xVhdv5IidANHiSADnJtBKCyAvR6aWz5VMH83wtWkYKvxYe9USaIG-fC_7HhCmNfGXIp6jg_Ax3w&smuh=37746&lh=Ac-dfKrOH4QAtVz7HRw'
 
@@ -32,7 +32,6 @@ def load_more_comments(page):
             page.get_by_role('button', name="Xem thêm bình luận").click()
             print("load")
             page.wait_for_timeout(1000)
-        
     except:
         pass
     print("Full load")
@@ -56,6 +55,15 @@ def click_read_more(page):
         print("Error in click_read_more")
         print(e)
 
+def remove_stopword(input_text):
+    with open('./vietnamese-stopwords.txt', 'r', encoding='utf8') as f:
+        stop_words = f.readlines()
+        stop_words = set(m.strip() for m in stop_words)
+
+    words = word_tokenize(input_text)
+    filtered_words = [word for word in words if word.lower() not in stop_words]
+    return ' '.join(filtered_words)
+
 def extract_comment(soup):
     output = []
     text = ''
@@ -70,7 +78,9 @@ def extract_comment(soup):
         text = ' '.join([text, cmt])
         output.append([user, cmt])
         print(user, ' ', cmt)
+    text = remove_stopword(text)
     return output, text
+
 
 def visualize_text(text):
     wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
