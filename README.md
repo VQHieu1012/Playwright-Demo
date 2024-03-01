@@ -14,6 +14,8 @@ pip install playwright-stealth
 pip install beautifulsoup4
 
 pip install wordcloud
+
+pip install underthesea
 ```
 
 Then you need to config acc_pass.py.
