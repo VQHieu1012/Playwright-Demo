@@ -7,6 +7,7 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from underthesea import word_tokenize
 import re
+import time
 import psycopg2
 from acc_pass import ACCOUNT, PASS, USER_DATA_DIR, HOST_DB, NAME_DB, USER_DB, PASSWORD_DB
 
@@ -22,6 +23,7 @@ link_post_2 = 'https://www.facebook.com/photo/?fbid=919353339782828&set=gm.14341
 link_post_3 = 'https://www.facebook.com/KikyoPam/videos/313260974537348?idorvanity=552152208714234'
 link_post_4 = 'https://www.facebook.com/photo/?fbid=932491698279008&set=gm.1635233520550462&idorvanity=317569278983566'
 link_post_5 = 'https://www.facebook.com/photo?fbid=1187063759077806&set=gm.1638379250235889&idorvanity=317569278983566'
+hehe = 'https://www.facebook.com/groups/khoahoctunhien2021dhqghn/posts/1441049916761148/'
 
 def sign_out(page):
     page.locator("//div[@class='x1rg5ohu x1n2onr6 x3ajldb x1ja2u2z']").first.click()
@@ -29,14 +31,25 @@ def sign_out(page):
     page.locator("//div[@role='listitem'][5]").click()
    
 def load_more_comments(page):
+    s = time.time()
     try:
-        while True:
-            page.get_by_role('button', name="Xem thêm bình luận").click()
-            print("load")
+        while page.get_by_role('button', name="Xem thêm bình luận") is not None:
+            #if page.get_by_role('button', name="Xem thêm bình luận") is not None:
+            page.get_by_role('button', name="Xem thêm bình luận").click(timeout=2000)
+            print("Loading...")
             page.wait_for_timeout(1000)
     except:
-        pass
-    print("Full load")
+        print("Time out!")
+    e = time.time()
+    print("Full load with ", str(e-s))
+
+def block(route):
+    if route.request.resource_type in ["image", "media"]: # "stylesheet"
+        route.abort()
+    elif ".mp4" in route.request.url:
+        route.abort()
+    else:
+        route.continue_()
 
 def show_all_comments(page):
     page.get_by_label("Viết bình luận", exact=True).click()
@@ -141,9 +154,18 @@ with sync_playwright() as p:
                                 ignore_default_args=['--enable-automation'])
     page = browser.new_page()
     stealth_sync(page)
+    
+
+    page.route("**/*", block)
+
+    # page.route("**/*", lambda route: route.abort()
+    #        if route.request.resource_type in ["image", "stylesheet", "media"]
+    #        else route.continue_()
+    #       )
+    
      
     page.goto(tiki, timeout=0)
-    page.goto(link_post_5)
+    page.goto(hehe)
     page.wait_for_timeout(2000)
 
     page.get_by_label("Email hoặc số điện thoại").locator('nth=0').fill(ACCOUNT)
@@ -182,8 +204,10 @@ for o in output:
 
 df = pd.DataFrame(output)
 df.to_csv('output.csv', index=False)
-store_to_db(output)
-
+try:
+    store_to_db(output)
+except:
+    print("Unable to store data")
 # visualize
 visualize_text(text)
 
